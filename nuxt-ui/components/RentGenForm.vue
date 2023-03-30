@@ -20,17 +20,35 @@
           :min="1"
           v-model:value="formState.monthlyRent"
           :formatter="
-            (value) => `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            (value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
           "
-          :parser="(value) => value.replace(/\Rs.\s?|(,*)/g, '')"
-        />
+          :parser="(value) => value.replace(/(,*)/g, '')"
+        >
+          <template #addonBefore>
+            <a-form-item style="margin: 0px" name="currencySymbol">
+              <a-select
+                v-model:value="formState.currencySymbol"
+                style="width: 60px"
+              >
+                <a-select-option value="₹">₹</a-select-option>
+                <a-select-option value="$">$</a-select-option>
+                <a-select-option value="€">€</a-select-option>
+                <a-select-option value="£">£</a-select-option>
+                <a-select-option value="¥">¥</a-select-option>
+              </a-select>
+            </a-form-item>
+          </template>
+        </a-input-number>
       </a-form-item>
       <a-form-item
         label="Your Name"
         name="userName"
         :rules="[{ required: true, message: 'Please enter Your Name!' }]"
       >
-        <a-input v-model:value="formState.userName" aria-label="Please enter Your Name!" />
+        <a-input
+          v-model:value="formState.userName"
+          aria-label="Please enter Your Name!"
+        />
       </a-form-item>
 
       <a-form-item
@@ -38,7 +56,10 @@
         name="ownerName"
         :rules="[{ required: true, message: 'Please enter Owner Name!' }]"
       >
-        <a-input v-model:value="formState.ownerName" aria-label="Please enter Owner Name!" />
+        <a-input
+          v-model:value="formState.ownerName"
+          aria-label="Please enter Owner Name!"
+        />
       </a-form-item>
 
       <a-form-item
@@ -46,18 +67,28 @@
         name="address"
         :rules="[{ required: true, message: 'Please enter Address!' }]"
       >
-        <a-textarea v-model:value="formState.address" aria-label="Please enter Address!" />
+        <a-textarea
+          v-model:value="formState.address"
+          aria-label="Please enter Address!"
+        />
       </a-form-item>
 
       <a-form-item label="Owner's PAN no" name="ownersPan" :rules="[]">
-        <a-input v-model:value="formState.ownersPan" aria-label="Please enter Owner's PAN no"/>
+        <a-input
+          v-model:value="formState.ownersPan"
+          aria-label="Please enter Owner's PAN no"
+        />
       </a-form-item>
       <a-form-item
         label="Duration"
         name="duration"
         :rules="[{ required: true, message: 'Please select the Duration!' }]"
       >
-        <a-range-picker v-model:value="formState.duration" picker="month" aria-label="Please select the Duration!" />
+        <a-range-picker
+          v-model:value="formState.duration"
+          picker="month"
+          aria-label="Please select the Duration!"
+        />
       </a-form-item>
 
       <a-form-item
@@ -65,11 +96,17 @@
         name="userEmail"
         :rules="[{ required: false, message: 'Please enter your Email Id!' }]"
       >
-        <a-input v-model:value="formState.userEmail" aria-label="Please enter your Email Id!" />
+        <a-input
+          v-model:value="formState.userEmail"
+          aria-label="Please enter your Email Id!"
+        />
       </a-form-item>
 
       <a-form-item name="generateType" label="Generate Receipt">
-        <a-radio-group v-model:value="formState.generateType" aria-label="Select Receipt Type Single or Receipt per Month">
+        <a-radio-group
+          v-model:value="formState.generateType"
+          aria-label="Select Receipt Type Single or Receipt per Month"
+        >
           <a-radio value="SINGLE">Single</a-radio>
           <a-radio value="RECEIPT_PER_MONTH">Receipt per Month</a-radio>
         </a-radio-group>
@@ -92,10 +129,13 @@
         </a-upload>
       </a-form-item>
 
-      <a-form-item :wrapper-col="{
-        lg: { offset: 4, span: 16 },
-        xs: { span: 24, offset: 0 },
-        sm: { span: 16, offset: 8 }}">
+      <a-form-item
+        :wrapper-col="{
+          lg: { offset: 4, span: 16 },
+          xs: { span: 24, offset: 0 },
+          sm: { span: 16, offset: 8 },
+        }"
+      >
         <a-button type="primary" shape="round" html-type="submit"
           >Generate Receipts</a-button
         >
@@ -106,17 +146,12 @@
 <script>
 import { defineComponent, reactive, ref } from "vue";
 import moment from "moment";
-import { message} from "ant-design-vue";
+import { message } from "ant-design-vue";
 import { UploadOutlined } from "@ant-design/icons-vue";
 
 const messageKey = "updatable";
 
-const formatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
-  currencyDisplay: "code",
-});
+const formatter = new Intl.NumberFormat("en-US", {});
 
 export default defineComponent({
   setup() {
@@ -132,6 +167,7 @@ export default defineComponent({
       duration: null,
       generateType: "SINGLE",
       ownerSignature: null,
+      currencySymbol: "₹",
     });
 
     const getFileName = (receipts) => {
@@ -158,17 +194,20 @@ export default defineComponent({
     };
 
     const downloadReceipts = async (receipts, base64OwnerSignature) => {
-      const config = useRuntimeConfig()
+      const config = useRuntimeConfig();
 
       console.log(config);
-      
+
       await fetch(config.apiBase + "/generate-receipts", {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ receipts, ownerSignature: base64OwnerSignature}),
+        body: JSON.stringify({
+          receipts,
+          ownerSignature: base64OwnerSignature,
+        }),
       })
         .then((res) => res.blob())
         .then((blob) => {
@@ -203,23 +242,24 @@ export default defineComponent({
 
       message.loading({ content: "Generating Receipts...", messageKey });
       let base64OwnerSignature;
-      let ownerSignature = values.ownerSignature ? values.ownerSignature.at(0) : null;
+      let ownerSignature = values.ownerSignature
+        ? values.ownerSignature.at(0)
+        : null;
       if (ownerSignature) {
         console.log("next");
         base64OwnerSignature = "data:" + ownerSignature.type + ";base64,";
 
-       const base64Gen = () => new Promise((resolve, reject) => {
-        let reader = new FileReader();
-        reader.onload = function () {
-          // base64OwnerSignature += reader.result
-          //   .replace("data:", "")
-          //   .replace(/^.+,/, "");
-          resolve(reader.result
-            .replace("data:", "")
-            .replace(/^.+,/, ""));
-        };
-        reader.readAsDataURL(ownerSignature.originFileObj)
-       });
+        const base64Gen = () =>
+          new Promise((resolve, reject) => {
+            let reader = new FileReader();
+            reader.onload = function () {
+              // base64OwnerSignature += reader.result
+              //   .replace("data:", "")
+              //   .replace(/^.+,/, "");
+              resolve(reader.result.replace("data:", "").replace(/^.+,/, ""));
+            };
+            reader.readAsDataURL(ownerSignature.originFileObj);
+          });
 
         base64OwnerSignature += await base64Gen();
         console.log(base64OwnerSignature);
@@ -235,6 +275,7 @@ export default defineComponent({
 
       const receipts = [];
 
+      console.log(values);
       while (startDate.isBefore(endDate)) {
         console.log(startDate.format("MMM YYYY"));
 
@@ -242,9 +283,9 @@ export default defineComponent({
           userName: values.userName,
           ownerName: values.ownerName,
           address: values.address,
-          monthlyRent: formatter
-            .format(values.monthlyRent)
-            .replace("INR", "Rs."),
+          monthlyRent: `${values.currencySymbol} ${formatter.format(
+            values.monthlyRent
+          )}`,
           ownersPan: values.ownersPan,
           userEmail: values.userEmail,
           receiptMonth: startDate.format("MMM YYYY"),
@@ -280,9 +321,9 @@ export default defineComponent({
       handleRemove,
     };
   },
-  components:{
-    UploadOutlined
-  }
+  components: {
+    UploadOutlined,
+  },
 });
 </script>
 
@@ -321,6 +362,10 @@ export default defineComponent({
 }
 :deep() .ant-upload {
   width: 100% !important;
+}
+
+:deep() .ant-input-number {
+  height: 34px;
 }
 
 @media screen and (max-width: 600px) {

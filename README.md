@@ -7,5 +7,3 @@
 
 ## Architecture
 ![image](https://user-images.githubusercontent.com/15173289/229989651-6f7072fe-5810-4559-9350-1acc1c7c5797.png)
-
-https://excalidraw.com/#room=4097e82669a041ad2b57,TfY1zR90zHhHFnKBloyCpQ
